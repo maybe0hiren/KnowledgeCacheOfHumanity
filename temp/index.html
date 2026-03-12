@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Rediscovery Engine</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 40px;
+}
+
+textarea {
+    width: 500px;
+    height: 140px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 8px 16px;
+}
+
+.resultBox {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f4f4f4;
+}
+
+.matchItem {
+    margin-bottom: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>Idea Rediscovery Test</h2>
+
+<textarea id="ideaInput" placeholder="Enter your idea..."></textarea>
+
+<br>
+<button onclick="sendIdea()">Analyze</button>
+
+<div class="resultBox">
+
+<h3>Analysis</h3>
+<p id="analysisText"></p>
+
+<h3>Similar Sources</h3>
+<div id="matchesBox"></div>
+
+</div>
+
+<script>
+
+async function sendIdea() {
+
+    const idea = document.getElementById("ideaInput").value;
+
+    const response = await fetch("http://127.0.0.1:8000/analyze", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            idea: idea
+        })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("analysisText").textContent = data.analysis;
+
+    const matchesBox = document.getElementById("matchesBox");
+    matchesBox.innerHTML = "";
+
+    data.matches.forEach(match => {
+
+        const div = document.createElement("div");
+        div.className = "matchItem";
+
+        div.innerHTML =
+            "<strong>" + match.title + "</strong><br>" +
+            "<a href='" + match.url + "' target='_blank'>" + match.url + "</a>";
+
+        matchesBox.appendChild(div);
+    });
+}
+
+</script>
+
+</body>
+</html>
