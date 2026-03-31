@@ -1,5 +1,4 @@
 from pipeline.queryGenerator import generateQueries
-from pipeline.retriever import retrieveSources
 from pipeline.scraper import scrapePages
 from pipeline.chunker import chunkDocuments
 from pipeline.embeddings import embedTexts
@@ -7,13 +6,20 @@ from pipeline.vectorIndex import searchSimilar
 from pipeline.reranker import rerankResults
 from llm.reasoning import explainRediscovery
 
+
+from pipeline.retrievers.wikiRetriever import retrieveWikipedia
+from pipeline.retrievers.arxivRetriever import retrieveArxiv
+from pipeline.retrievers.semanticScholarRetriever import retrieveSemanticScholar
+
 async def processIdea(idea):
 
     queries = generateQueries(idea)
 
-    searchResults = await retrieveSources(queries)
+    wikiResults = await retrieveWikipedia(idea)
+    arxivResults = await retrieveArxiv(idea)
+    scholarResults = await retrieveSemanticScholar(idea)
 
-    pages = await scrapePages(searchResults)
+    pages = wikiResults + arxivResults + scholarResults
 
     chunks = chunkDocuments(pages)
 

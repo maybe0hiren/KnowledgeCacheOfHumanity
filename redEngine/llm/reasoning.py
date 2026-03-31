@@ -1,6 +1,8 @@
 import os
 import google.generativeai as genai
+from dotenv import load_dotenv
 
+load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 model = genai.GenerativeModel("models/gemini-2.5-flash")
@@ -16,10 +18,11 @@ User Idea:
 Possible related historical text:
 {context}
 
-Answer in **3 short sentences max**:
+Answer in **4-5 short sentences max**:
 1. Is this idea already discovered?
 2. What earlier concept is it related to?
 3. When or where it appeared.
+4. List the sources
 """
 
     response = model.generate_content(prompt)
