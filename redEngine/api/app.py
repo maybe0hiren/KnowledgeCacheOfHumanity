@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from services.rediscoveryService import processIdea
+from redEngine.services.rediscoveryService import processIdea
 
 app = FastAPI()
 
