@@ -3,16 +3,31 @@ from storage.models import Concept, ConceptResource
 from datetime import datetime
 
 
-def saveOrUpdateConcept(name: str) -> None:
+def saveOrUpdateConcept(raw_input: str) -> None:
     db = SessionLocal()
     try:
+        parts = raw_input.split(":", 1)
+
+        name = parts[0].strip().lower()
+        description = parts[1].strip() if len(parts) > 1 else ""
+
         concept = db.query(Concept).filter(Concept.name == name).first()
+
         if concept:
             concept.frequency += 1
             concept.lastAccessed = datetime.utcnow()
+
+            if description and not concept.description:
+                concept.description = description
+
         else:
-            concept = Concept(name=name)
+            concept = Concept(
+                name=name,
+                description=description,
+                lastAccessed=datetime.utcnow()
+            )
             db.add(concept)
+
         db.commit()
     finally:
         db.close()
@@ -50,6 +65,7 @@ def getConceptWithResources(name: str) -> dict | None:
         resources = db.query(ConceptResource).filter(ConceptResource.concept_name == name).all()
         return {
             "concept":       concept.name,
+            "description":   concept.description,
             "search_count":  concept.frequency,
             "storage_layer": concept.storageLayer,
             "last_accessed": concept.lastAccessed.isoformat(),

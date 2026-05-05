@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
 
@@ -16,7 +16,7 @@ class Concept(Base):
     storageLayer     = Column(String, default="warm")
     lastAccessed     = Column(DateTime, default=datetime.utcnow)
     createdAt        = Column(DateTime, default=datetime.utcnow)
-
+    description      = Column(Text, nullable=True)
 
 class ConceptResource(Base):
     __tablename__ = "concept_resources"

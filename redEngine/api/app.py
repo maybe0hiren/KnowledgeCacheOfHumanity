@@ -30,7 +30,7 @@ registry = RegistryManager(db_path=_KNOWLEDGE_DB)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://127.0.0.1:5500"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,10 +41,18 @@ app.include_router(auth_router)
 
 def _get_current_user(request: Request) -> dict | None:
     auth_header = request.headers.get("Authorization", "")
-    token = auth_header[7:] if auth_header.startswith("Bearer ") else request.cookies.get("session_token")
+    print("AUTH HEADER:", auth_header)
+
+    token = auth_header[7:] if auth_header.startswith("Bearer ") else None
+    print("TOKEN EXTRACTED:", token)
+
     if not token:
         return None
-    return get_user_from_token(token)
+
+    user = get_user_from_token(token)
+    print("USER:", user)
+
+    return user
 
 
 class IdeaRequest(BaseModel):

@@ -50,13 +50,14 @@ async def explainRediscovery(idea, chunks):
         "You are a knowledgeable assistant explaining concepts in clear, natural language.\n\n"
         f'A user submitted this idea or concept: "{idea}"\n\n'
         f"{source_instruction}\n\n"
-        "Write a natural, flowing explanation (3-5 paragraphs) that covers:\n"
+        "Write a natural, flowing explanation (1-2 paragraphs) that covers:\n"
+        "- Start your explaination by stating the name of the concept and then a semicolon"
+        "Example - Zero: <<<Description>>>\n"
         "- What this concept is called and how it is commonly understood\n"
         "- Its origins — who discovered or described it, and when and where it appeared\n"
         "- How it has evolved or been rediscovered over time\n"
         "- Any closely related concepts, fields, or ideas it connects to\n"
-        "- Why it is significant or how it is used today\n\n"
-        "Write as if explaining to a curious person. Do not use bullet points or numbered lists.\n"
+        "- Do not use bullet points or numbered lists.\n"
         "Start directly with the concept explanation. "
         "Do not say 'Based on the sources' or 'According to the text'."
     )

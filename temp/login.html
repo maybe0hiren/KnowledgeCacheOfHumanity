@@ -142,6 +142,7 @@ async function doLogin() {
   }
 
   localStorage.setItem("token", data.token);
+  console.log("LOGIN RESPONSE:", data);
   localStorage.setItem("username", data.username);
   window.location.href = "index.html";
 }
