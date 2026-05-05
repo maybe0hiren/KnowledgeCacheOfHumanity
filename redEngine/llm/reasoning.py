@@ -1,25 +1,33 @@
 import os
-import time
+import asyncio
 import logging
 from pathlib import Path
 import google.generativeai as genai
 from dotenv import load_dotenv
 
 _ROOT = Path(__file__).resolve().parents[2]
-load_dotenv(dotenv_path=_ROOT / ".env")
-
-_api_key = os.getenv("GEMINI_API_KEY")
-if not _api_key:
-    raise EnvironmentError(f"GEMINI_API_KEY not found. Looked in: {_ROOT / '.env'}")
-
-genai.configure(api_key=_api_key)
-
-model = genai.GenerativeModel("gemini-2.5-flash")
 
 logger = logging.getLogger(__name__)
 
+_configured_key = None
+
+def _ensure_configured():
+    """Load API key from .env and configure genai. Re-reads .env every call so
+    a key change takes effect without restarting the server."""
+    global _configured_key
+    load_dotenv(dotenv_path=_ROOT / ".env", override=True)
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        raise EnvironmentError(f"GEMINI_API_KEY not found. Looked in: {_ROOT / '.env'}")
+    if key != _configured_key:
+        genai.configure(api_key=key)
+        _configured_key = key
+        logger.info("Gemini API key (re)configured.")
+
 
 async def explainRediscovery(idea, chunks):
+    _ensure_configured()
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
     if chunks:
         context = "\n\n".join([
@@ -53,7 +61,7 @@ async def explainRediscovery(idea, chunks):
         "Do not say 'Based on the sources' or 'According to the text'."
     )
 
-    for attempt in range(3):
+    for attempt in range(2):
         try:
             response = model.generate_content(prompt)
             text = response.text
@@ -62,10 +70,15 @@ async def explainRediscovery(idea, chunks):
             return text.strip()
         except Exception as e:
             err = str(e)
-            if "429" in err and attempt < 2:
-                wait = 15 * (attempt + 1)
-                logger.warning("Gemini 429, retrying in %ds…", wait)
-                time.sleep(wait)
+            # If quota is literally zero, don't bother retrying
+            if "quota_limit_value" in err and '"0"' in err:
+                logger.error("Gemini API key has ZERO quota. Get a new key from https://aistudio.google.com/apikey")
+                break
+            if "429" in err and attempt < 1:
+                logger.warning("Gemini 429, retrying in 5s…")
+                await asyncio.sleep(5)
                 continue
             logger.error("Gemini error for idea '%s': %s", idea, e)
-            return f"An explanation could not be generated at this time. The concept '{idea}' was recorded for future reference."
+            break
+
+    return f"An explanation could not be generated at this time. The concept '{idea}' was recorded for future reference."

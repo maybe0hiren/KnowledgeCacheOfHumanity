@@ -62,6 +62,9 @@ async def analyzeIdea(request: Request, body: IdeaRequest):
         import traceback
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": "Analysis failed", "detail": str(e)})
+    print(f"[ANALYZE] Returning: analysis={bool(result.get('analysis'))}, "
+          f"matches={len(result.get('matches', []))}, "
+          f"resources={len(result.get('resources', []))}")
     return result
 
 
