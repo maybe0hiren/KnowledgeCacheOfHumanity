@@ -1,92 +1,486 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>Rediscovery Engine</title>
-
 <style>
-body {
-    font-family: Arial;
-    margin: 40px;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-textarea {
-    width: 500px;
-    height: 140px;
-}
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+  }
 
-button {
-    margin-top: 10px;
-    padding: 8px 16px;
-}
+  /* ── Navbar ─────────────────────────────────────────────────────────────── */
+  nav {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.resultBox {
-    margin-top: 20px;
-    padding: 15px;
-    background: #f4f4f4;
-}
+  nav .brand { font-size: 16px; font-weight: bold; letter-spacing: 0.5px; }
 
-.matchItem {
+  nav .user-info { font-size: 13px; display: flex; align-items: center; gap: 16px; }
+
+  nav button {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 5px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  nav button:hover { background: rgba(255,255,255,0.15); }
+
+  /* ── Layout ─────────────────────────────────────────────────────────────── */
+  .container {
+    max-width: 820px;
+    margin: 36px auto;
+    padding: 0 16px;
+  }
+
+  h2 { font-size: 20px; color: #1a1a2e; margin-bottom: 6px; }
+
+  .tagline { font-size: 13px; color: #888; margin-bottom: 24px; }
+
+  /* ── Search box ──────────────────────────────────────────────────────────── */
+  .search-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-bottom: 28px;
+  }
+
+  textarea {
+    width: 100%;
+    height: 110px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    transition: border 0.2s;
+  }
+
+  textarea:focus { border-color: #4a90e2; }
+
+  .search-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  .btn-primary {
+    background: #1a1a2e;
+    color: #fff;
+    border: none;
+    padding: 10px 26px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-primary:hover { background: #2d2d5e; }
+  .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+
+  /* ── Result card ─────────────────────────────────────────────────────────── */
+  .result-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #888;
     margin-bottom: 10px;
-}
+  }
+
+  #analysisText p {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  #analysisText p:last-child { margin-bottom: 0; }
+
+  /* ── Match items ─────────────────────────────────────────────────────────── */
+  .match-item {
+    border: 1px solid #eee;
+    border-radius: 7px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .match-item strong { display: block; font-size: 14px; color: #1a1a2e; margin-bottom: 4px; }
+
+  .match-item a {
+    font-size: 12px;
+    color: #4a90e2;
+    word-break: break-all;
+    text-decoration: none;
+  }
+
+  .match-item a:hover { text-decoration: underline; }
+
+  /* ── Resource badges ─────────────────────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+
+  .badge-wikipedia       { background: #e8f4f8; color: #1a6a8e; }
+  .badge-arxiv           { background: #fef0e7; color: #b05e0d; }
+  .badge-semantic_scholar{ background: #eaf4eb; color: #1e6e2e; }
+
+  /* ── Concept history panel ──────────────────────────────────────────────── */
+  .history-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-bottom: 28px;
+  }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .history-header h3 { font-size: 15px; color: #1a1a2e; }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid #1a1a2e;
+    color: #1a1a2e;
+    padding: 5px 14px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-secondary:hover { background: #f0f0f0; }
+
+  .concept-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .concept-row:last-child { border-bottom: none; }
+  .concept-row:hover { background: #f9f9f9; }
+
+  .concept-name { color: #1a1a2e; font-weight: bold; }
+
+  .concept-meta { color: #888; font-size: 12px; }
+
+  .layer-hot  { color: #e74c3c; font-weight: bold; }
+  .layer-warm { color: #e67e22; font-weight: bold; }
+  .layer-cold { color: #3498db; font-weight: bold; }
+
+  /* ── Spinner ─────────────────────────────────────────────────────────────── */
+  .spinner {
+    display: none;
+    font-size: 13px;
+    color: #888;
+  }
+
+  /* ── Error banner ────────────────────────────────────────────────────────── */
+  .error-banner {
+    background: #ffeaea;
+    color: #c0392b;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
 </style>
-
 </head>
-
 <body>
 
-<h2>Idea Rediscovery Test</h2>
+<nav>
+  <span class="brand">KnowledgeCacheOfHumanity</span>
+  <div class="user-info">
+    <span id="navUser"></span>
+    <button onclick="doLogout()">Sign Out</button>
+  </div>
+</nav>
 
-<textarea id="ideaInput" placeholder="Enter your idea..."></textarea>
+<div class="container">
 
-<br>
-<button onclick="sendIdea()">Analyze</button>
+  <h2>Idea Rediscovery Engine</h2>
+  <p class="tagline">Enter any concept or idea to find related historical knowledge.</p>
 
-<div class="resultBox">
+  <div class="error-banner" id="errorBanner"></div>
 
-<h3>Analysis</h3>
-<p id="analysisText"></p>
+  <!-- Search -->
+  <div class="search-box">
+    <textarea id="ideaInput" placeholder="Describe your idea or concept..."></textarea>
+    <div class="search-row">
+      <span class="spinner" id="spinner">Searching knowledge sources...</span>
+      <button type="button" class="btn-primary" id="analyzeBtn" onclick="sendIdea()">Analyze</button>
+    </div>
+  </div>
 
-<h3>Similar Sources</h3>
-<div id="matchesBox"></div>
+  <!-- Analysis result -->
+  <div class="result-card" id="analysisCard">
+    <div class="section-title">Analysis</div>
+    <p id="analysisText"></p>
+  </div>
+
+  <!-- Matched sources -->
+  <div class="result-card" id="matchesCard">
+    <div class="section-title">Similar Sources Found</div>
+    <div id="matchesBox"></div>
+  </div>
+
+  <!-- Resources used -->
+  <div class="result-card" id="resourcesCard">
+    <div class="section-title">Resources Consulted</div>
+    <div id="resourcesBox"></div>
+  </div>
+
+  <!-- Concept history -->
+  <div class="history-box">
+    <div class="history-header">
+      <h3>Previously Searched Concepts</h3>
+      <button class="btn-secondary" onclick="loadConcepts()">Refresh</button>
+    </div>
+    <div id="conceptsList"><p style="color:#aaa;font-size:13px;">Loading...</p></div>
+  </div>
 
 </div>
 
 <script>
+  function authHeaders() {
+    const token = localStorage.getItem("token");
+    return { "Content-Type": "application/json", "Authorization": "Bearer " + token };
+  }
 
-async function sendIdea() {
+  // ── Auth check ──────────────────────────────────────────────────────────────
+  async function checkAuth() {
+    const token = localStorage.getItem("token");
+    if (!token) { window.location.href = "login.html"; return; }
+    const res = await fetch("http://127.0.0.1:8000/auth/me", { headers: authHeaders() });
+    if (!res.ok) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      window.location.href = "login.html";
+      return;
+    }
+    const user = await res.json();
+    document.getElementById("navUser").textContent = "Hi, " + user.username;
+  }
 
-    const idea = document.getElementById("ideaInput").value;
+  async function doLogout() {
+    await fetch("http://127.0.0.1:8000/auth/logout", { method: "POST", headers: authHeaders() });
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    window.location.href = "login.html";
+  }
 
-    const response = await fetch("http://127.0.0.1:8000/analyze", {
+  // ── Analyze ─────────────────────────────────────────────────────────────────
+  async function sendIdea() {
+    const idea      = document.getElementById("ideaInput").value.trim();
+    const errorEl   = document.getElementById("errorBanner");
+    const spinner   = document.getElementById("spinner");
+    const btn       = document.getElementById("analyzeBtn");
+
+    errorEl.style.display = "none";
+    if (!idea) {
+      errorEl.textContent = "Please enter an idea first.";
+      errorEl.style.display = "block";
+      return;
+    }
+
+    btn.disabled = true;
+    spinner.style.display = "inline";
+    hideCards();
+
+    let res, data;
+    try {
+      res = await fetch("http://127.0.0.1:8000/analyze", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            idea: idea
-        })
+        headers: authHeaders(),
+        body: JSON.stringify({ idea })
+      });
+    } catch (networkErr) {
+      btn.disabled = false;
+      spinner.style.display = "none";
+      errorEl.textContent = "Cannot reach server. Is uvicorn running on port 8000?";
+      errorEl.style.display = "block";
+      return;
+    }
+
+    btn.disabled = false;
+    spinner.style.display = "none";
+
+    if (res.status === 401) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      errorEl.textContent = "Server returned an unreadable response. Check uvicorn terminal for errors.";
+      errorEl.style.display = "block";
+      console.error("JSON parse error:", parseErr);
+      return;
+    }
+
+    if (!res.ok) {
+      errorEl.textContent = (data && data.detail) ? data.detail : "Something went wrong. Please try again.";
+      errorEl.style.display = "block";
+      console.error("API error:", data);
+      return;
+    }
+
+    console.log("API response:", data);
+    renderResults(data);
+    loadConcepts();
+    document.getElementById("analysisCard").scrollIntoView({ behavior: "smooth" });
+  }
+
+  function hideCards() {
+    ["analysisCard", "matchesCard", "resourcesCard"].forEach(id => {
+      document.getElementById(id).style.display = "none";
     });
+  }
 
-    const data = await response.json();
+  function renderResults(data) {
+    // Analysis
+    if (data.analysis) {
+      const paragraphs = data.analysis
+        .split(/\n+/)
+        .filter(p => p.trim())
+        .map(p => "<p>" + p.trim() + "</p>")
+        .join("");
+      document.getElementById("analysisText").innerHTML = paragraphs;
+      document.getElementById("analysisCard").style.display = "block";
+    }
 
-    document.getElementById("analysisText").textContent = data.analysis;
-
+    // Matches
     const matchesBox = document.getElementById("matchesBox");
     matchesBox.innerHTML = "";
-
-    data.matches.forEach(match => {
-
+    if (data.matches && data.matches.length > 0) {
+      data.matches.forEach(m => {
         const div = document.createElement("div");
-        div.className = "matchItem";
-
+        div.className = "match-item";
         div.innerHTML =
-            "<strong>" + match.title + "</strong><br>" +
-            "<a href='" + match.url + "' target='_blank'>" + match.url + "</a>";
-
+          "<strong>" + (m.title || "Untitled") + "</strong>" +
+          "<a href='" + m.url + "' target='_blank'>" + m.url + "</a>";
         matchesBox.appendChild(div);
-    });
-}
+      });
+      document.getElementById("matchesCard").style.display = "block";
+    }
 
+    // Resources
+    const resourcesBox = document.getElementById("resourcesBox");
+    resourcesBox.innerHTML = "";
+    if (data.resources && data.resources.length > 0) {
+      data.resources.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "match-item";
+        const badgeClass = "badge-" + (r.resource_type || "default");
+        div.innerHTML =
+          "<span class='badge " + badgeClass + "'>" + (r.resource_type || "source") + "</span>" +
+          "<strong>" + (r.title || "Untitled") + "</strong>" +
+          (r.url ? "<a href='" + r.url + "' target='_blank'>" + r.url + "</a>" : "");
+        resourcesBox.appendChild(div);
+      });
+      document.getElementById("resourcesCard").style.display = "block";
+    }
+  }
+
+  // ── Concept history ──────────────────────────────────────────────────────────
+  async function loadConcepts() {
+    const res = await fetch("http://127.0.0.1:8000/concepts", { headers: authHeaders() });
+    if (!res.ok) return;
+    const concepts = await res.json();
+    const list = document.getElementById("conceptsList");
+    if (concepts.length === 0) {
+      list.innerHTML = "<p style='color:#aaa;font-size:13px;'>No concepts searched yet.</p>";
+      return;
+    }
+    list.innerHTML = "";
+    concepts.forEach(c => {
+      const layerClass = "layer-" + c.storage_layer;
+      const div = document.createElement("div");
+      div.className = "concept-row";
+      div.innerHTML =
+        "<span class='concept-name'>" + c.name + "</span>" +
+        "<span class='concept-meta'>Searched <strong>" + c.search_count + "x</strong> &nbsp;|&nbsp; " +
+        "<span class='" + layerClass + "'>" + c.storage_layer.toUpperCase() + "</span></span>";
+      div.addEventListener("click", () => lookupConcept(c.name));
+      list.appendChild(div);
+    });
+  }
+
+  async function lookupConcept(name) {
+    const res = await fetch("http://127.0.0.1:8000/concept/" + encodeURIComponent(name), {
+      headers: authHeaders()
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const resourcesBox = document.getElementById("resourcesBox");
+    resourcesBox.innerHTML =
+      "<p style='font-size:13px;color:#555;margin-bottom:12px;'>" +
+        "Showing saved resources for <strong>" + data.concept + "</strong> " +
+        "(searched " + data.search_count + " time" + (data.search_count !== 1 ? "s" : "") + ")" +
+      "</p>";
+
+    if (data.resources.length === 0) {
+      resourcesBox.innerHTML += "<p style='color:#aaa;font-size:13px;'>No resources saved yet.</p>";
+    } else {
+      data.resources.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "match-item";
+        const badgeClass = "badge-" + (r.type || "default");
+        div.innerHTML =
+          "<span class='badge " + badgeClass + "'>" + (r.type || "source") + "</span>" +
+          "<strong>" + (r.title || "Untitled") + "</strong>" +
+          (r.url ? "<a href='" + r.url + "' target='_blank'>" + r.url + "</a>" : "");
+        resourcesBox.appendChild(div);
+      });
+    }
+    document.getElementById("resourcesCard").style.display = "block";
+    document.getElementById("resourcesCard").scrollIntoView({ behavior: "smooth" });
+  }
+
+  // ── Init ────────────────────────────────────────────────────────────────────
+  checkAuth().then(() => loadConcepts());
 </script>
 
 </body>
