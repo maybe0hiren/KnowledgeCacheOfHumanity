@@ -1,7 +1,6 @@
-# storage/maintenanceJob.py  (after change)
-from redEngine.api.app import mom              # reuse the singleton
+from storage.cacheManager import rearrangeLayers
+
 
 def runMaintenance():
-    report = mom.maintenance()
-    print(report.summary())                    # richer output than before
-    return report
+    rearrangeLayers()
+    print("Storage layers updated")
