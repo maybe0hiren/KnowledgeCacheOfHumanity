@@ -4,17 +4,14 @@ def chunkDocuments(pages, chunkSize=500):
 
     for page in pages:
 
-        text = page["content"]
-
+        text  = page.get("content") or ""
         words = text.split()
 
         for i in range(0, len(words), chunkSize):
-
             part = " ".join(words[i:i+chunkSize])
-
             chunks.append({
-                "text": part,
-                "url": page["url"],
+                "text":  part,
+                "url":   page["url"],
                 "title": page["title"]
             })
 
