@@ -1,9 +1,13 @@
+# redEngine/api/app.py  (after change)
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from redEngine.services.rediscoveryService import processIdea
+from MOM.mom_manager import MOMManager          # ← add
 
 app = FastAPI()
+
+mom = MOMManager(db_path="storage/knowledge.db") # ← add (singleton)
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,5 +22,5 @@ class IdeaRequest(BaseModel):
 
 @app.post("/analyze")
 async def analyzeIdea(request: IdeaRequest):
-    result = await processIdea(request.idea)
+    result = await processIdea(request.idea, mom)  # ← pass mom in
     return result
