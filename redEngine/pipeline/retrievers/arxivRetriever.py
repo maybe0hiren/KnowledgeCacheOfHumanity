@@ -6,9 +6,9 @@ logger = logging.getLogger(__name__)
 
 async def retrieveArxiv(query):
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             r = await client.get(
-                "http://export.arxiv.org/api/query",
+                "https://export.arxiv.org/api/query",
                 params={"search_query": f"all:{query}", "start": 0, "max_results": 5}
             )
     except Exception as e:

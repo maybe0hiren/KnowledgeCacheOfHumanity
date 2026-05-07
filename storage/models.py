@@ -18,6 +18,7 @@ class Concept(Base):
     lastAccessed     = Column(DateTime, default=datetime.utcnow)
     createdAt        = Column(DateTime, default=datetime.utcnow)
     description      = Column(Text, nullable=True)
+    analysis         = Column(Text, nullable=True)   # cached LLM-generated explanation
 
 class ConceptResource(Base):
     __tablename__ = "concept_resources"

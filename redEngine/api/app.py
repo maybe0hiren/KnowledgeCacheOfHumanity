@@ -32,7 +32,7 @@ registry = RegistryManager(db_path=_KNOWLEDGE_DB)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,9 +40,13 @@ app.add_middleware(
 
 app.include_router(auth_router)
 
-# ── Serve frontend HTML files at root ──────────────────────────────────────
+# ── Serve frontend HTML files ──────────────────────────────────────────────
 @app.get("/")
 async def root():
+    return FileResponse(str(_FRONTEND_DIR / "landing.html"))
+
+@app.get("/app")
+async def app_page():
     return FileResponse(str(_FRONTEND_DIR / "index.html"))
 
 @app.get("/login")

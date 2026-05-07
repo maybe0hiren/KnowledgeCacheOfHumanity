@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Cache of Humanity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:    #1B3A6B;
+  --blue:    #2176AE;
+  --blue-h:  #1A5E8A;
+  --blue-l:  #E8F1FB;
+  --teal:    #148F77;
+  --dark:    #0F1C2E;
+  --bg:      #F4F6F9;
+  --card:    #FFFFFF;
+  --text:    #1C2B3A;
+  --muted:   #5C6E7E;
+  --border:  #D8E2EE;
+  --sh:      0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --sh-md:   0 4px 12px rgba(0,0,0,.1);
+  --r-sm:    6px;
+  --r-md:    10px;
+  --r-lg:    16px;
+  --r-f:     9999px;
+  --font:    'Inter', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+a { text-decoration: none; }
+
+/* ── NAV ──────────────────────────────────────────────── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 64px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--sh);
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; color: var(--text); }
+.logo-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 12px; flex-shrink: 0;
+}
+.logo-text { font-weight: 700; font-size: 14px; color: var(--navy); }
+.nav-links { display: flex; gap: 28px; }
+.nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; transition: color .2s; }
+.nav-links a:hover { color: var(--blue); }
+.nav-actions { display: flex; gap: 10px; align-items: center; }
+
+/* ── BUTTONS ──────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 20px; border-radius: var(--r-md);
+  font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+  transition: all .2s; font-family: var(--font);
+}
+.btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-h); }
+.btn-lg { padding: 12px 28px; font-size: 15px; }
+.btn-dark { background: var(--card); color: var(--navy); font-weight: 600; }
+.btn-dark:hover { background: var(--blue-l); }
+
+/* ── HERO ─────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  padding: 100px 48px 80px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.hero-inner {
+  max-width: 1180px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 12px; border-radius: var(--r-f);
+  background: var(--blue-l); color: var(--blue);
+  font-size: 12px; font-weight: 600; margin-bottom: 22px;
+  border: 1px solid #C0D9F0;
+}
+.hero-h1 {
+  font-size: clamp(36px, 4.5vw, 58px);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -0.025em; margin-bottom: 18px;
+  color: var(--navy);
+}
+.hero-h1 span { color: var(--blue); }
+.hero-p { font-size: 16px; color: var(--muted); line-height: 1.75; margin-bottom: 32px; max-width: 460px; }
+.hero-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
+.hero-note { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.note-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+
+/* ── MOCKUP ───────────────────────────────────────────── */
+.hero-visual { display: flex; justify-content: center; align-items: center; }
+.mockup {
+  background: var(--card); border-radius: var(--r-lg); padding: 22px;
+  box-shadow: var(--sh-md); width: 380px;
+  border: 1px solid var(--border);
+}
+.m-topbar { display: flex; gap: 6px; margin-bottom: 18px; }
+.m-dot { width: 10px; height: 10px; border-radius: 50%; }
+.m-dot:nth-child(1) { background: #FF5F57; }
+.m-dot:nth-child(2) { background: #FEBC2E; }
+.m-dot:nth-child(3) { background: #28C840; }
+
+.m-search {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--r-md); padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.m-search-text { font-size: 13px; color: var(--muted); }
+.m-cursor { width: 2px; height: 14px; background: var(--blue); animation: blink 1.2s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.m-result { background: var(--bg); border-radius: var(--r-md); padding: 14px; }
+.m-concept { font-weight: 700; font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.m-cached { background: #D1FAE5; color: #065F46; font-size: 10px; padding: 2px 8px; border-radius: var(--r-f); font-weight: 700; }
+.m-text { font-size: 12px; color: var(--muted); line-height: 1.55; margin-bottom: 12px; }
+.m-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.m-pill { font-size: 11px; padding: 3px 10px; border-radius: var(--r-f); font-weight: 500; }
+.pill-w { background: #FFF7ED; color: #9A3412; }
+.pill-a { background: #EFF6FF; color: #1E40AF; }
+.pill-s { background: #F0FDF4; color: #166534; }
+
+/* ── TICKER ───────────────────────────────────────────── */
+.ticker { background: var(--dark); padding: 16px 0; overflow: hidden; }
+.ticker-track { display: flex; gap: 52px; animation: tick 30s linear infinite; width: max-content; }
+@keyframes tick { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.t-item { color: rgba(255,255,255,.4); font-size: 13px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 18px; }
+.t-item::before { content: '—'; color: var(--blue); opacity: .8; }
+
+/* ── SECTIONS ─────────────────────────────────────────── */
+.section { padding: 72px 48px; }
+.section-inner { max-width: 1180px; margin: 0 auto; }
+.section-white { background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.s-tag { color: var(--blue); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; display: block; }
+.s-title { font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 12px; color: var(--navy); }
+.s-sub { font-size: 15px; color: var(--muted); max-width: 500px; margin-bottom: 48px; line-height: 1.7; }
+
+/* ── FEATURES ─────────────────────────────────────────── */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.f-card {
+  background: var(--bg); border-radius: var(--r-lg); padding: 24px;
+  border: 1px solid var(--border); transition: box-shadow .2s, border-color .2s;
+}
+.f-card:hover { box-shadow: var(--sh-md); border-color: #BDD3E8; }
+.f-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; }
+.ic-1 { background: var(--blue-l); }
+.ic-2 { background: #FFF3E0; }
+.ic-3 { background: #E8F8F5; }
+.ic-4 { background: #F3E5F5; }
+.f-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--navy); }
+.f-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+/* ── HOW IT WORKS ─────────────────────────────────────── */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 48px; position: relative; }
+.steps::before {
+  content: ''; position: absolute; top: 23px;
+  left: calc(12.5% + 12px); right: calc(12.5% + 12px);
+  height: 1px; background: var(--border); z-index: 0;
+}
+.step { text-align: center; position: relative; z-index: 1; }
+.step-num {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--card); border: 2px solid var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; color: var(--blue);
+  margin: 0 auto 16px; box-shadow: var(--sh);
+}
+.step-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; color: var(--navy); }
+.step-desc { font-size: 13px; color: var(--muted); line-height: 1.55; padding: 0 4px; }
+
+/* ── CTA ──────────────────────────────────────────────── */
+.cta-section {
+  background: var(--navy); padding: 72px 48px; text-align: center;
+}
+.cta-section h2 { font-size: clamp(28px, 3.5vw, 44px); font-weight: 800; color: #fff; margin-bottom: 12px; line-height: 1.15; }
+.cta-section p { color: rgba(255,255,255,.6); font-size: 16px; margin-bottom: 32px; }
+.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ── FOOTER ───────────────────────────────────────────── */
+.footer {
+  padding: 24px 48px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: flex-end; gap: 24px;
+}
+.footer a { color: var(--muted); font-size: 13px; transition: color .2s; }
+.footer a:hover { color: var(--blue); }
+
+/* ── FADE IN ──────────────────────────────────────────── */
+.fi { opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease; }
+.fi.vis { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <div class="logo-icon">K</div>
+    <span class="logo-text">Knowledge Cache of Humanity</span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#about">About</a>
+  </div>
+  <div class="nav-actions">
+    <a href="/login" class="btn btn-outline">Sign In</a>
+    <a href="/signup" class="btn btn-primary">Get Started →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="fi" style="transition-delay:.05s">
+      <div class="hero-tag">AI-Powered Knowledge Engine</div>
+      <h1 class="hero-h1">
+        Humanity Keeps<br>
+        <span>Rediscovering.</span><br>
+        We Fixed That.
+      </h1>
+      <p class="hero-p">
+        Knowledge Cache of Humanity is a global AI knowledge engine that searches, analyzes, and caches ideas so that nothing important is ever lost or independently rediscovered again.
+      </p>
+      <div class="hero-cta">
+        <a href="/signup" class="btn btn-primary btn-lg">Start Exploring →</a>
+        <a href="#how-it-works" class="btn btn-outline btn-lg">How It Works</a>
+      </div>
+    </div>
+    <div class="hero-visual fi" style="transition-delay:.15s">
+      <div class="mockup">
+        <div class="m-topbar">
+          <div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div>
+        </div>
+        <div class="m-search">
+          <span style="font-size:14px">🔍</span>
+          <span class="m-search-text">invention of zero...</span>
+          <div class="m-cursor"></div>
+        </div>
+        <div class="m-result">
+          <div class="m-concept">
+            Zero
+            <span class="m-cached">✓ Cached</span>
+          </div>
+          <div class="m-text">The concept of zero as a number originated in ancient India, attributed to Brahmagupta (~628 CE), and later spread through the Arab world to medieval Europe...</div>
+          <div class="m-pills">
+            <span class="m-pill pill-w">Wikipedia</span>
+            <span class="m-pill pill-a">arXiv</span>
+            <span class="m-pill pill-s">Semantic Scholar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <span class="s-tag">Features</span>
+    <h2 class="s-title">Everything you need to explore human knowledge</h2>
+    <p class="s-sub">From raw retrieval to AI-generated explanations - the entire pipeline, automated.</p>
+    <div class="features-grid">
+      <div class="f-card fi">
+        <div class="f-icon ic-1">🔍</div>
+        <h3 class="f-title">Intelligent Retrieval</h3>
+        <p class="f-desc">Simultaneously searches Wikipedia, arXiv research papers, and Semantic Scholar to gather real, cited knowledge from authoritative sources.</p>
+      </div>
+      <div class="f-card fi" style="transition-delay:.08s">
+        <div class="f-icon ic-2">🧠</div>
+        <h3 class="f-title">AI-Powered Analysis</h3>
+        <p class="f-desc">Artificial intelligence Model reads the retrieved sources and generates a structured multi-paragraph explanation covering origins, history, and significance.</p>
+      </div>
+      <div class="f-card fi" style="transition-delay:.16s">
+        <div class="f-icon ic-3">⚡</div>
+        <h3 class="f-title">Semantic Matching</h3>
+        <p class="f-desc">SentenceTransformer embeddings and FAISS vector search detect when your idea already exists under a different name, preventing duplicates.</p>
+      </div>
+      <div class="f-card fi" style="transition-delay:.04s">
+        <div class="f-icon ic-4">📦</div>
+        <h3 class="f-title">Smart Caching</h3>
+        <p class="f-desc">Inspired by LRU and LFU cache algorithms — frequently accessed concepts stay hot, rare ones move to archive, mirroring CPU memory hierarchy.</p>
+      </div>
+      <div class="f-card fi" style="transition-delay:.12s">
+        <div class="f-icon ic-1">🏛️</div>
+        <h3 class="f-title">Knowledge History</h3>
+        <p class="f-desc">Every concept is saved with its canonical name and your original description, building a personal knowledge cache that grows with every search.</p>
+      </div>
+      <div class="f-card fi" style="transition-delay:.20s">
+        <div class="f-icon ic-2">🔗</div>
+        <h3 class="f-title">Source Linking</h3>
+        <p class="f-desc">Every explanation is backed by direct links to original Wikipedia articles, arXiv papers, and Semantic Scholar publications for full traceability.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-white" id="how-it-works">
+  <div class="section-inner">
+    <span class="s-tag">How It Works</span>
+    <h2 class="s-title">From idea to insight in seconds</h2>
+    <div class="steps">
+      <div class="step fi">
+        <div class="step-num">1</div>
+        <h4 class="step-title">Submit Your Idea</h4>
+        <p class="step-desc">Type any concept, invention, or discovery. The system understands intent regardless of phrasing.</p>
+      </div>
+      <div class="step fi" style="transition-delay:.1s">
+        <div class="step-num">2</div>
+        <h4 class="step-title">AI Retrieves Sources</h4>
+        <p class="step-desc">Wikipedia, arXiv, and Semantic Scholar are searched. Results are cached for instant future access.</p>
+      </div>
+      <div class="step fi" style="transition-delay:.2s">
+        <div class="step-num">3</div>
+        <h4 class="step-title">Vector Search & Rerank</h4>
+        <p class="step-desc">FAISS finds the most semantically similar content. A CrossEncoder reranks by relevance to your exact query.</p>
+      </div>
+      <div class="step fi" style="transition-delay:.3s">
+        <div class="step-num">4</div>
+        <h4 class="step-title">LLM Explains</h4>
+        <p class="step-desc">Large Language Model generates a rich, sourced explanation saved permanently to your knowledge cache.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="about">
+  <h2>Join humanity's memory system.</h2>
+  <p>Start exploring concepts, build your knowledge cache, and contribute to the collective intelligence of civilization.</p>
+  <div class="cta-btns">
+    <a href="/signup" class="btn btn-dark btn-lg">Create Free Account →</a>
+    <a href="/login" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,.3)">Sign In</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <a href="/login">Sign In</a>
+  <a href="/signup">Sign Up</a>
+</footer>
+
+<script>
+  if (localStorage.getItem('token')) window.location.href = '/app';
+
+  const concepts = ['Zero','Calculus','Relativity','DNA Double Helix','Photosynthesis','Gravity','Evolution','Quantum Mechanics','Electricity','Printing Press','Internet Protocol','Antibiotics','Germ Theory','Plate Tectonics','Natural Selection','Thermodynamics','Pythagorean Theorem','Heliocentric Model','Binary Code','Penicillin'];
+  const t = document.getElementById('ticker');
+  t.innerHTML = [...concepts, ...concepts].map(c => `<span class="t-item">${c}</span>`).join('');
+
+  const obs = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

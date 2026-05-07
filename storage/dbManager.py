@@ -3,10 +3,11 @@ from storage.models import Concept, ConceptResource
 from datetime import datetime
 
 
-def saveOrUpdateConcept(name: str, description: str = "") -> None:
+def saveOrUpdateConcept(name: str, description: str = "", analysis: str = "") -> None:
     """
     name        — extracted concept name from LLM (e.g. "Photosynthesis")
     description — original user input (e.g. "Process by which plants make food")
+    analysis    — LLM-generated explanation text (cached; only saved on first search)
     """
     db = SessionLocal()
     try:
@@ -17,11 +18,35 @@ def saveOrUpdateConcept(name: str, description: str = "") -> None:
             concept.lastAccessed = datetime.utcnow()
             if description and not concept.description:
                 concept.description = description
+            # Only store analysis if not already cached
+            if analysis and not concept.analysis:
+                concept.analysis = analysis
         else:
-            concept = Concept(name=name, description=description)
+            concept = Concept(
+                name=name,
+                description=description,
+                analysis=analysis or None,
+            )
             db.add(concept)
 
         db.commit()
+    finally:
+        db.close()
+
+
+def getCachedAnalysis(idea: str) -> str | None:
+    """
+    Return the stored analysis for a given user query, or None if not cached.
+    Matches on the original user input (description) or concept name (case-insensitive).
+    """
+    from sqlalchemy import func
+    db = SessionLocal()
+    try:
+        concept = db.query(Concept).filter(
+            (Concept.description == idea) |
+            (func.lower(Concept.name) == idea.lower())
+        ).filter(Concept.analysis.isnot(None)).first()
+        return concept.analysis if concept else None
     finally:
         db.close()
 
