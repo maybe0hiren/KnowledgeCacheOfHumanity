@@ -109,7 +109,7 @@
   <button onclick="doLogin()">Sign In</button>
 
   <div class="footer">
-    Don't have an account? <a href="signup.html">Sign up</a>
+    Don't have an account? <a href="/signup">Sign up</a>
   </div>
 </div>
 
@@ -127,13 +127,19 @@ async function doLogin() {
     return;
   }
 
-  const res = await fetch("http://127.0.0.1:8000/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
+  let res, data;
+  try {
+    res = await fetch("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    data = await res.json();
+  } catch (err) {
+    errorEl.textContent = "Cannot reach server. Make sure uvicorn is running on port 8000.";
+    errorEl.style.display = "block";
+    return;
+  }
 
   if (!res.ok) {
     errorEl.textContent = data.error || "Login failed.";
@@ -144,7 +150,7 @@ async function doLogin() {
   localStorage.setItem("token", data.token);
   console.log("LOGIN RESPONSE:", data);
   localStorage.setItem("username", data.username);
-  window.location.href = "index.html";
+  window.location.href = "/";
 }
 
 document.addEventListener("keydown", e => {

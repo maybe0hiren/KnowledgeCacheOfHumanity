@@ -126,7 +126,7 @@
   <button onclick="doSignup()">Create Account</button>
 
   <div class="footer">
-    Already have an account? <a href="login.html">Sign in</a>
+    Already have an account? <a href="/login">Sign in</a>
   </div>
 </div>
 
@@ -160,13 +160,19 @@ async function doSignup() {
     return;
   }
 
-  const res = await fetch("http://127.0.0.1:8000/auth/signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, password })
-  });
-
-  const data = await res.json();
+  let res, data;
+  try {
+    res = await fetch("/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, password })
+    });
+    data = await res.json();
+  } catch (err) {
+    errorEl.textContent = "Cannot reach server. Make sure uvicorn is running on port 8000.";
+    errorEl.style.display = "block";
+    return;
+  }
 
   if (!res.ok) {
     errorEl.textContent = data.error || "Signup failed.";
@@ -176,7 +182,7 @@ async function doSignup() {
 
   successEl.textContent = "Account created! Redirecting to login...";
   successEl.style.display = "block";
-  setTimeout(() => window.location.href = "login.html", 1500);
+  setTimeout(() => window.location.href = "/login", 1500);
 }
 
 document.addEventListener("keydown", e => {

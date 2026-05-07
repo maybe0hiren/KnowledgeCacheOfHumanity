@@ -2,8 +2,9 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from redEngine.services.rediscoveryService import processIdea
@@ -16,6 +17,7 @@ from auth.auth_manager import get_user_from_token
 
 _ROOT = Path(__file__).resolve().parents[2]
 _KNOWLEDGE_DB = str(_ROOT / "storage" / "knowledge.db")
+_FRONTEND_DIR = _ROOT / "temp"
 
 
 @asynccontextmanager
@@ -37,6 +39,22 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+
+# ── Serve frontend HTML files at root ──────────────────────────────────────
+@app.get("/")
+async def root():
+    return FileResponse(str(_FRONTEND_DIR / "index.html"))
+
+@app.get("/login")
+async def login_page():
+    return FileResponse(str(_FRONTEND_DIR / "login.html"))
+
+@app.get("/signup")
+async def signup_page():
+    return FileResponse(str(_FRONTEND_DIR / "signup.html"))
+
+# Serve any other static assets (CSS, JS, images) from temp/
+app.mount("/static", StaticFiles(directory=str(_FRONTEND_DIR)), name="static")
 
 
 def _get_current_user(request: Request) -> dict | None:
@@ -96,6 +114,7 @@ async def listConcepts(request: Request):
     return [
         {
             "name":          c.name,
+            "description":   c.description or "",
             "search_count":  c.frequency,
             "storage_layer": c.storageLayer,
             "last_accessed": c.lastAccessed.isoformat(),

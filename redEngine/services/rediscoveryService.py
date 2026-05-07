@@ -18,14 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 async def processIdea(idea: str, registry) -> dict:
-    # ── 1. Save concept (non-critical — don't let it block everything) ───
-    try:
-        saveOrUpdateConcept(idea)
-    except Exception:
-        logger.error("saveOrUpdateConcept failed:\n%s", traceback.format_exc())
+    # concept_name will be extracted from LLM response later; use idea as fallback
+    concept_name = idea
 
     try:
-        registry.engine.record_search(idea)
+        registry.engine.record_search(concept_name)
     except Exception:
         logger.error("registry.record_search failed:\n%s", traceback.format_exc())
 
@@ -78,17 +75,12 @@ async def processIdea(idea: str, registry) -> dict:
     logger.info("Retrieved: %d wiki, %d arxiv, %d scholar results",
                 len(wikiResults), len(arxivResults), len(scholarResults))
 
-    # ── 4. Build resources list ──────────────────────────────────────────
+    # ── 4. Build resources list (saved to DB later after name is extracted) ─
     resources = (
         [{"resource_type": "wikipedia",        "title": r.get("title", ""), "url": r.get("url", "")} for r in wikiResults]  +
         [{"resource_type": "arxiv",            "title": r.get("title", ""), "url": r.get("url", "")} for r in arxivResults] +
         [{"resource_type": "semantic_scholar", "title": r.get("title", ""), "url": r.get("url", "")} for r in scholarResults]
     )
-
-    try:
-        saveConceptResources(idea, resources)
-    except Exception:
-        logger.error("saveConceptResources failed:\n%s", traceback.format_exc())
 
     # ── 5. Chunk → embed → search → rerank ───────────────────────────────
     reranked = []
@@ -122,18 +114,42 @@ async def processIdea(idea: str, registry) -> dict:
             f"listed below provide relevant context and background for this idea."
         )
 
-    # ── 7. Maintenance (non-critical) ────────────────────────────────────
+    # ── 7. Extract concept name from "ConceptName: explanation" format ───
+    analysis_body = explanation
+    first_line = explanation.split("\n")[0]
+    if ": " in first_line:
+        parts = first_line.split(": ", 1)
+        extracted = parts[0].strip().strip("*").strip()
+        # Accept as concept name if it's a reasonable length (not a full sentence)
+        if 1 <= len(extracted.split()) <= 6:
+            concept_name = extracted
+            analysis_body = explanation  # keep full text including name line
+            logger.info("Extracted concept name: '%s'", concept_name)
+
+    # ── 8. Save concept with extracted name + original description ───────
+    try:
+        saveOrUpdateConcept(concept_name, description=idea)
+    except Exception:
+        logger.error("saveOrUpdateConcept failed:\n%s", traceback.format_exc())
+
+    try:
+        saveConceptResources(concept_name, resources)
+    except Exception:
+        logger.error("saveConceptResources failed:\n%s", traceback.format_exc())
+
+    # ── 9. Maintenance (non-critical) ────────────────────────────────────
     try:
         registry.run_maintenance()
     except Exception:
         logger.error("Maintenance failed:\n%s", traceback.format_exc())
 
-    # ── 8. Always return a valid response ────────────────────────────────
+    # ── 10. Always return a valid response ───────────────────────────────
     result = {
-        "matches":   reranked,
-        "analysis":  explanation,
-        "resources": resources,
+        "concept_name": concept_name,
+        "matches":      reranked,
+        "analysis":     analysis_body,
+        "resources":    resources,
     }
-    logger.info("Returning response: %d matches, %d resources, analysis=%s",
-                len(reranked), len(resources), bool(explanation))
+    logger.info("Returning response: concept='%s', %d matches, %d resources",
+                concept_name, len(reranked), len(resources))
     return result

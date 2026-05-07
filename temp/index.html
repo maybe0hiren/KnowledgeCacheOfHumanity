@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Rediscovery Engine</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -252,22 +255,25 @@
     </div>
   </div>
 
-  <!-- Analysis result -->
-  <div class="result-card" id="analysisCard">
-    <div class="section-title">Analysis</div>
-    <p id="analysisText"></p>
-  </div>
+  <!-- Results (always visible, content replaced on each search) -->
+  <div id="resultsSection" style="display:none;">
 
-  <!-- Matched sources -->
-  <div class="result-card" id="matchesCard">
-    <div class="section-title">Similar Sources Found</div>
-    <div id="matchesBox"></div>
-  </div>
+    <div class="result-card" style="display:block;" id="analysisCard">
+      <div class="section-title">Analysis</div>
+      <div id="conceptNameBadge" style="font-size:17px;font-weight:bold;color:#1a1a2e;margin-bottom:12px;"></div>
+      <div id="analysisText"><p style="color:#aaa;font-size:14px;">No analysis yet.</p></div>
+    </div>
 
-  <!-- Resources used -->
-  <div class="result-card" id="resourcesCard">
-    <div class="section-title">Resources Consulted</div>
-    <div id="resourcesBox"></div>
+    <div class="result-card" style="display:block;" id="matchesCard">
+      <div class="section-title">Similar Sources Found</div>
+      <div id="matchesBox"><p style="color:#aaa;font-size:14px;">No matches found.</p></div>
+    </div>
+
+    <div class="result-card" style="display:block;" id="resourcesCard">
+      <div class="section-title">Resources Consulted</div>
+      <div id="resourcesBox"><p style="color:#aaa;font-size:14px;">No resources retrieved.</p></div>
+    </div>
+
   </div>
 
   <!-- Concept history -->
@@ -296,12 +302,12 @@
   // ── Auth check ──────────────────────────────────────────────────────────────
   async function checkAuth() {
     const token = localStorage.getItem("token");
-    if (!token) { window.location.href = "login.html"; return; }
-    const res = await fetch("http://127.0.0.1:8000/auth/me", { headers: authHeaders() });
+    if (!token) { window.location.href = "/login"; return; }
+    const res = await fetch("/auth/me", { headers: authHeaders() });
     if (!res.ok) {
       localStorage.removeItem("token");
       localStorage.removeItem("username");
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return;
     }
     const user = await res.json();
@@ -309,10 +315,11 @@
   }
 
   async function doLogout() {
-    await fetch("http://127.0.0.1:8000/auth/logout", { method: "POST", headers: authHeaders() });
+    await fetch("/auth/logout", { method: "POST", headers: authHeaders() });
     localStorage.removeItem("token");
     localStorage.removeItem("username");
-    window.location.href = "login.html";
+    sessionStorage.removeItem("lastResults");
+    window.location.href = "/login";
   }
 
   // ── Analyze ─────────────────────────────────────────────────────────────────
@@ -335,7 +342,7 @@
 
     let res, data;
     try {
-      res = await fetch("http://127.0.0.1:8000/analyze", {
+      res = await fetch("/analyze", {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({ idea })
@@ -352,7 +359,7 @@
     spinner.style.display = "none";
 
     if (res.status === 401) {
-      window.location.href = "login.html";
+      window.location.href = "/login";
       return;
     }
 
@@ -377,31 +384,33 @@
     console.log("API response:", data);
     renderResults(data);
     loadConcepts();
-    document.getElementById("analysisCard").scrollIntoView({ behavior: "smooth" });
+    document.getElementById("resultsSection").scrollIntoView({ behavior: "smooth" });
   }
 
   function hideCards() {
-    ["analysisCard", "matchesCard", "resourcesCard"].forEach(id => {
-      document.getElementById(id).style.display = "none";
-    });
+    // Reset content to placeholder state; keep cards visible
+    document.getElementById("analysisText").innerHTML = "<p style='color:#aaa;font-size:14px;'>Analyzing...</p>";
+    document.getElementById("conceptNameBadge").textContent = "";
+    document.getElementById("matchesBox").innerHTML = "";
+    document.getElementById("resourcesBox").innerHTML = "";
+    document.getElementById("resultsSection").style.display = "block";
   }
 
   function renderResults(data) {
-    // Analysis
-    if (data.analysis) {
-      const paragraphs = data.analysis
-        .split(/\n+/)
-        .filter(p => p.trim())
-        .map(p => "<p>" + p.trim() + "</p>")
-        .join("");
-      document.getElementById("analysisText").innerHTML = paragraphs;
-      document.getElementById("analysisCard").style.display = "block";
-    }
+    // ── Analysis ──────────────────────────────────────────────────────────
+    document.getElementById("conceptNameBadge").textContent = data.concept_name || "";
 
-    // Matches
+    const paragraphs = (data.analysis || "No analysis returned.")
+      .split(/\n+/)
+      .filter(p => p.trim())
+      .map(p => "<p style='font-size:14px;line-height:1.8;color:#333;margin-bottom:12px;'>" + p.trim() + "</p>")
+      .join("");
+    document.getElementById("analysisText").innerHTML = paragraphs;
+
+    // ── Matches ───────────────────────────────────────────────────────────
     const matchesBox = document.getElementById("matchesBox");
-    matchesBox.innerHTML = "";
     if (data.matches && data.matches.length > 0) {
+      matchesBox.innerHTML = "";
       data.matches.forEach(m => {
         const div = document.createElement("div");
         div.className = "match-item";
@@ -410,13 +419,14 @@
           "<a href='" + m.url + "' target='_blank'>" + m.url + "</a>";
         matchesBox.appendChild(div);
       });
-      document.getElementById("matchesCard").style.display = "block";
+    } else {
+      matchesBox.innerHTML = "<p style='color:#aaa;font-size:13px;'>No similar sources found for this search.</p>";
     }
 
-    // Resources
+    // ── Resources ─────────────────────────────────────────────────────────
     const resourcesBox = document.getElementById("resourcesBox");
-    resourcesBox.innerHTML = "";
     if (data.resources && data.resources.length > 0) {
+      resourcesBox.innerHTML = "";
       data.resources.forEach(r => {
         const div = document.createElement("div");
         div.className = "match-item";
@@ -427,13 +437,20 @@
           (r.url ? "<a href='" + r.url + "' target='_blank'>" + r.url + "</a>" : "");
         resourcesBox.appendChild(div);
       });
-      document.getElementById("resourcesCard").style.display = "block";
+    } else {
+      resourcesBox.innerHTML = "<p style='color:#aaa;font-size:13px;'>No external resources retrieved for this search.</p>";
     }
+
+    // ── Always show the results section ───────────────────────────────────
+    document.getElementById("resultsSection").style.display = "block";
+
+    // ── Persist so results survive a page reload ──────────────────────────
+    try { sessionStorage.setItem("lastResults", JSON.stringify(data)); } catch(e) {}
   }
 
   // ── Concept history ──────────────────────────────────────────────────────────
   async function loadConcepts() {
-    const res = await fetch("http://127.0.0.1:8000/concepts", { headers: authHeaders() });
+    const res = await fetch("/concepts", { headers: authHeaders() });
     if (!res.ok) return;
     const concepts = await res.json();
     const list = document.getElementById("conceptsList");
@@ -447,8 +464,11 @@
       const div = document.createElement("div");
       div.className = "concept-row";
       div.innerHTML =
-        "<span class='concept-name'>" + c.name + "</span>" +
-        "<span class='concept-meta'>Searched <strong>" + c.search_count + "x</strong> &nbsp;|&nbsp; " +
+        "<span style='display:flex;flex-direction:column;gap:2px;'>" +
+          "<span class='concept-name'>" + c.name + "</span>" +
+          (c.description ? "<span style='font-size:11px;color:#aaa;font-weight:normal;'>" + c.description + "</span>" : "") +
+        "</span>" +
+        "<span class='concept-meta' style='white-space:nowrap;'>Searched <strong>" + c.search_count + "x</strong> &nbsp;|&nbsp; " +
         "<span class='" + layerClass + "'>" + c.storage_layer.toUpperCase() + "</span></span>";
       div.addEventListener("click", () => lookupConcept(c.name));
       list.appendChild(div);
@@ -456,7 +476,7 @@
   }
 
   async function lookupConcept(name) {
-    const res = await fetch("http://127.0.0.1:8000/concept/" + encodeURIComponent(name), {
+    const res = await fetch("/concept/" + encodeURIComponent(name), {
       headers: authHeaders()
     });
     if (!res.ok) return;
@@ -483,12 +503,24 @@
         resourcesBox.appendChild(div);
       });
     }
-    document.getElementById("resourcesCard").style.display = "block";
-    document.getElementById("resourcesCard").scrollIntoView({ behavior: "smooth" });
+    document.getElementById("resultsSection").style.display = "block";
+    document.getElementById("resultsSection").scrollIntoView({ behavior: "smooth" });
   }
 
   // ── Init ────────────────────────────────────────────────────────────────────
-  checkAuth().then(() => loadConcepts());
+  checkAuth().then(() => {
+    loadConcepts();
+    // Restore last results if page was reloaded mid-session
+    try {
+      const saved = sessionStorage.getItem("lastResults");
+      if (saved) {
+        const data = JSON.parse(saved);
+        renderResults(data);
+      }
+    } catch(e) {
+      sessionStorage.removeItem("lastResults");
+    }
+  });
 </script>
 
 </body>

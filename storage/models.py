@@ -10,6 +10,7 @@ class Concept(Base):
 
     id               = Column(Integer, primary_key=True)
     name             = Column(String, unique=True, nullable=False)
+    description      = Column(String, default="")   # original user input
     frequency        = Column(Integer, default=1)
     rediscoveryCount = Column(Integer, default=0)
     weight           = Column(Float, default=0)
