@@ -98,6 +98,11 @@ def getConceptWithResources(name: str) -> dict | None:
 
 
 def getAllConcepts() -> list:
+    from storage.cacheManager import rearrangeLayers
+    try:
+        rearrangeLayers()
+    except Exception:
+        pass
     db = SessionLocal()
     try:
         return db.query(Concept).order_by(Concept.frequency.desc()).all()

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
 
@@ -8,11 +8,12 @@ AuthBase = declarative_base()
 class User(AuthBase):
     __tablename__ = "users"
 
-    id            = Column(Integer, primary_key=True)
-    username      = Column(String, unique=True, nullable=False)
-    email         = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    created_at    = Column(DateTime, default=datetime.utcnow)
+    id                   = Column(Integer, primary_key=True)
+    username             = Column(String, unique=True, nullable=False)
+    email                = Column(String, unique=True, nullable=False)
+    password_hash        = Column(String, nullable=False)
+    created_at           = Column(DateTime, default=datetime.utcnow)
+    must_change_password = Column(Boolean, default=False)
 
 
 class Session(AuthBase):

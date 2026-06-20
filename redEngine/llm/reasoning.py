@@ -1,4 +1,6 @@
 import os
+import re
+import json
 import asyncio
 import logging
 from pathlib import Path
@@ -12,25 +14,13 @@ _configured_key = None
 
 
 def _ensure_configured():
-    """
-    Load API key from .env and configure Gemini.
-    Reloads every call to support live key changes.
-    """
     global _configured_key
-
     load_dotenv(dotenv_path=_ROOT / ".env", override=True)
-
     key = os.getenv("GEMINI_API_KEY")
-
     if not key:
-        raise EnvironmentError(
-            f"GEMINI_API_KEY not found. Looked in: {_ROOT / '.env'}"
-        )
-
-    # Debug (can remove later)
+        raise EnvironmentError(f"GEMINI_API_KEY not found. Looked in: {_ROOT / '.env'}")
     print("ENV PATH:", _ROOT / ".env")
     print("API KEY:", key)
-
     if key != _configured_key:
         genai.configure(api_key=key)
         _configured_key = key
@@ -40,7 +30,6 @@ def _ensure_configured():
 async def explainRediscovery(idea, chunks):
     _ensure_configured()
 
-    # Stable model (important fix)
     model = genai.GenerativeModel("models/gemini-flash-lite-latest")
 
     if chunks:
@@ -48,7 +37,6 @@ async def explainRediscovery(idea, chunks):
             f"[Source: {c.get('title', 'Unknown')}]\n{c['text'][:500]}"
             for c in chunks[:5]
         ])
-
         source_instruction = (
             "Here is relevant information found from historical sources, "
             "research papers, and encyclopedias:\n\n"
@@ -80,19 +68,13 @@ async def explainRediscovery(idea, chunks):
 
     for attempt in range(2):
         try:
-            # Fix: run blocking call safely
-            response = await asyncio.to_thread(
-                model.generate_content, prompt
-            )
-
-            # Fix: correct response parsing
+            response = await asyncio.to_thread(model.generate_content, prompt)
             try:
                 text = response.candidates[0].content.parts[0].text
             except Exception as parse_error:
                 print("Parsing Error:", parse_error)
                 text = None
 
-            # Debug (can remove later)
             print("RAW GEMINI OUTPUT:", text)
 
             if not text:
@@ -102,23 +84,45 @@ async def explainRediscovery(idea, chunks):
 
         except Exception as e:
             err = str(e)
-
-            # Zero quota case
             if "quota_limit_value" in err and '"0"' in err:
-                logger.error(
-                    "Gemini API key has ZERO quota. Get a new key from https://aistudio.google.com/apikey"
-                )
+                logger.error("Gemini API key has ZERO quota. Get a new key from https://aistudio.google.com/apikey")
                 break
-
-            # Rate limit retry
             if "429" in err and attempt < 1:
                 logger.warning("Gemini 429, retrying in 5s…")
                 await asyncio.sleep(5)
                 continue
-
-            # Show real error
             print("GEMINI ERROR:", e)
             logger.error("Gemini error for idea '%s': %s", idea, e)
             break
 
     return f"An explanation could not be generated at this time. The concept '{idea}' was recorded for future reference."
+
+
+async def getStartups(concept: str) -> list:
+    """Use Gemini to get a list of real startups (global + Indian) working on this concept."""
+    _ensure_configured()
+    model = genai.GenerativeModel("models/gemini-flash-lite-latest")
+
+    prompt = (
+        f'List real startups and companies (both global and Indian) that work on or are closely related to the concept: "{concept}". '
+        'Return ONLY a JSON array. Each object must have exactly two fields: "name" (company name) and "country" (country name). '
+        'Example format: [{"name": "OpenAI", "country": "USA"}, {"name": "Unacademy", "country": "India"}]. '
+        'Include 6-8 companies total. Include at least 2 Indian startups/companies if they exist in this space. '
+        'Only include real, existing companies. Return ONLY the JSON array, no explanation, no markdown, no code fences.'
+    )
+
+    try:
+        response = await asyncio.to_thread(model.generate_content, prompt)
+        text = response.candidates[0].content.parts[0].text.strip()
+        # Strip markdown code fences if present
+        text = re.sub(r'^```(?:json)?\s*', '', text, flags=re.MULTILINE)
+        text = re.sub(r'```\s*$', '', text, flags=re.MULTILINE)
+        text = text.strip()
+        startups = json.loads(text)
+        if isinstance(startups, list):
+            # Ensure each item has name and country
+            return [s for s in startups if isinstance(s, dict) and "name" in s and "country" in s]
+        return []
+    except Exception as e:
+        logger.error("getStartups failed for '%s': %s", concept, e)
+        return []

@@ -7,13 +7,14 @@ from redEngine.pipeline.chunker import chunkDocuments
 from redEngine.pipeline.embeddings import embedTexts
 from redEngine.pipeline.vectorIndex import searchSimilar
 from redEngine.pipeline.reranker import rerankResults
-from redEngine.llm.reasoning import explainRediscovery
+from redEngine.llm.reasoning import explainRediscovery, getStartups
 
 from redEngine.pipeline.retrievers.wikiRetriever import retrieveWikipedia
 from redEngine.pipeline.retrievers.arxivRetriever import retrieveArxiv
 from redEngine.pipeline.retrievers.semanticScholarRetriever import retrieveSemanticScholar
 
 from storage.dbManager import saveOrUpdateConcept, saveConceptResources, getCachedAnalysis
+from storage.cacheManager import rearrangeLayers
 
 logger = logging.getLogger(__name__)
 
@@ -131,16 +132,32 @@ async def processIdea(idea: str, registry) -> dict:
         logger.error("getCachedAnalysis failed:\n%s", traceback.format_exc())
 
     gemini_succeeded = False
+    startups = []
     if cached_analysis:
         explanation = cached_analysis
+        try:
+            startups = await getStartups(concept_name)
+        except Exception:
+            logger.error("getStartups failed:\n%s", traceback.format_exc())
     else:
         try:
-            explanation = await explainRediscovery(idea, reranked)
-            if explanation:
+            results = await asyncio.gather(
+                explainRediscovery(idea, reranked),
+                getStartups(idea),
+                return_exceptions=True,
+            )
+            explanation = results[0] if not isinstance(results[0], Exception) else ""
+            startups    = results[1] if not isinstance(results[1], Exception) else []
+            if isinstance(results[0], Exception):
+                logger.error("explainRediscovery failed: %s", results[0])
+            elif explanation:
                 gemini_succeeded = True
                 logger.info("Analysis generated (%d chars)", len(explanation))
+            if isinstance(results[1], Exception):
+                logger.error("getStartups failed: %s", results[1])
         except Exception:
-            logger.error("explainRediscovery failed:\n%s", traceback.format_exc())
+            logger.error("LLM gather failed:\n%s", traceback.format_exc())
+            explanation = ""
 
     if not explanation:
         explanation = (
@@ -184,12 +201,18 @@ async def processIdea(idea: str, registry) -> dict:
     except Exception:
         logger.error("Maintenance failed:\n%s", traceback.format_exc())
 
+    try:
+        rearrangeLayers()
+    except Exception:
+        logger.error("rearrangeLayers failed:\n%s", traceback.format_exc())
+
     # ── 10. Always return a valid response ───────────────────────────────
     result = {
         "concept_name": concept_name,
         "matches":      reranked,
         "analysis":     analysis_body,
         "resources":    resources,
+        "startups":     startups,
     }
     logger.info("Returning response: concept='%s', %d matches, %d resources",
                 concept_name, len(reranked), len(resources))

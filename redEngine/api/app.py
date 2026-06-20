@@ -18,6 +18,7 @@ from auth.auth_manager import get_user_from_token
 _ROOT = Path(__file__).resolve().parents[2]
 _KNOWLEDGE_DB = str(_ROOT / "storage" / "knowledge.db")
 _FRONTEND_DIR = _ROOT / "temp"
+_LOGO_DIR = _ROOT / "Logo"
 
 
 @asynccontextmanager
@@ -59,6 +60,10 @@ async def signup_page():
 
 # Serve any other static assets (CSS, JS, images) from temp/
 app.mount("/static", StaticFiles(directory=str(_FRONTEND_DIR)), name="static")
+
+# Serve logo assets
+if _LOGO_DIR.exists():
+    app.mount("/logo", StaticFiles(directory=str(_LOGO_DIR)), name="logo")
 
 
 def _get_current_user(request: Request) -> dict | None:

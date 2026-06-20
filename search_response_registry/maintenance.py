@@ -123,8 +123,9 @@ class MaintenanceEngine:
     def run(self) -> MaintenanceReport:
         t0, now, report = time.perf_counter(), time.time(), MaintenanceReport()
         with self._connect() as conn:
-            report.lru_demotions = self._apply_lru_demotions(conn, now)
+            # ARU runs first, then LRU has final say — prevents ARU from overwriting LRU demotions
             report.aru_promotions, report.aru_demotions, report.weights_updated = self._apply_aru_ranking(conn, now)
+            report.lru_demotions = self._apply_lru_demotions(conn, now)
             conn.commit()
         if self.response_cache is not None:
             report.cache_purged = self.response_cache.purge_expired()

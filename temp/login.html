@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In — Knowledge Cache of Humanity</title>
+<title>Sign In - Sanatan Labs: Knowledge Cache of Humanity</title>
+<link rel="icon" type="image/jpeg" href="/logo/Logo.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -28,7 +29,6 @@
 html, body { height: 100%; }
 body { font-family: var(--font); display: flex; min-height: 100vh; }
 
-/* LEFT PANEL */
 .left {
   width: 44%; flex-shrink: 0;
   background: var(--dark);
@@ -38,17 +38,15 @@ body { font-family: var(--font); display: flex; min-height: 100vh; }
 }
 .left-inner { text-align: center; max-width: 300px; }
 
-.brand-mark {
-  width: 56px; height: 56px; border-radius: 12px;
-  background: var(--navy);
-  border: 1.5px solid rgba(33,118,174,.5);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-weight: 800; font-size: 15px;
-  margin: 0 auto 24px;
-}
+.brand-logo { margin: 0 auto 20px; }
+.brand-logo img { width: 130px; height: 130px; border-radius: 18px; object-fit: cover; }
+
 .brand-name {
-  color: #fff; font-size: 20px; font-weight: 700;
-  margin-bottom: 8px; line-height: 1.3;
+  color: #fff; font-size: 18px; font-weight: 700;
+  margin-bottom: 4px; line-height: 1.3;
+}
+.brand-sub-name {
+  color: rgba(255,255,255,.55); font-size: 13px; font-weight: 500; margin-bottom: 10px;
 }
 .brand-sub {
   color: rgba(255,255,255,.42); font-size: 13px;
@@ -63,12 +61,8 @@ body { font-family: var(--font); display: flex; min-height: 100vh; }
   padding: 4px 12px; border-radius: var(--r-f);
   transition: color .2s, border-color .2s;
 }
-.tag:hover {
-  color: rgba(255,255,255,.8);
-  border-color: rgba(33,118,174,.5);
-}
+.tag:hover { color: rgba(255,255,255,.8); border-color: rgba(33,118,174,.5); }
 
-/* RIGHT PANEL */
 .right {
   flex: 1; background: var(--bg);
   display: flex; align-items: center; justify-content: center;
@@ -89,16 +83,18 @@ body { font-family: var(--font); display: flex; min-height: 100vh; }
   background: var(--card); color: var(--text);
   transition: border-color .2s, box-shadow .2s;
 }
-.field input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(33,118,174,.1);
-}
+.field input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(33,118,174,.1); }
 .field input::placeholder { color: #A8BAC8; }
 
 .err {
   background: #FFF2F2; color: #B91C1C; padding: 10px 13px;
   border-radius: var(--r-md); font-size: 13px; margin-bottom: 14px;
   display: none; border: 1px solid #FECACA;
+}
+.ok-msg {
+  background: #F0FDF4; color: #15803D; padding: 10px 13px;
+  border-radius: var(--r-md); font-size: 13px; margin-bottom: 14px;
+  display: none; border: 1px solid #BBF7D0;
 }
 
 .btn-submit {
@@ -112,19 +108,70 @@ body { font-family: var(--font); display: flex; min-height: 100vh; }
 .btn-submit:hover { background: var(--blue); }
 
 .form-foot {
-  text-align: center; margin-top: 20px;
+  text-align: center; margin-top: 16px;
   font-size: 13px; color: var(--muted);
 }
 .form-foot a { color: var(--blue); font-weight: 600; text-decoration: none; }
 .form-foot a:hover { text-decoration: underline; }
 
+.forgot-link {
+  display: block; text-align: right; font-size: 12.5px;
+  color: var(--blue); font-weight: 600; cursor: pointer;
+  margin-top: -8px; margin-bottom: 16px;
+}
+.forgot-link:hover { text-decoration: underline; }
+
 .back {
   position: fixed; top: 18px; left: 18px; z-index: 100;
   color: rgba(255,255,255,.4); font-size: 12.5px;
-  text-decoration: none; font-family: var(--font);
-  transition: color .2s;
+  text-decoration: none; font-family: var(--font); transition: color .2s;
 }
 .back:hover { color: rgba(255,255,255,.8); }
+
+/* ── MODAL ─────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.55); z-index: 200;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--card); border-radius: 14px;
+  padding: 28px 28px 24px; width: 100%; max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+.modal-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.modal-err { background:#FFF2F2;color:#B91C1C;padding:9px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none;border:1px solid #FECACA; }
+.modal-ok  { background:#F0FDF4;color:#15803D;padding:9px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none;border:1px solid #BBF7D0; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px; }
+.modal-field input {
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r-md);
+  font-size:14px;font-family:var(--font);outline:none;background:var(--bg);color:var(--text);
+  transition:border-color .2s,box-shadow .2s;
+}
+.modal-field input:focus { border-color:var(--blue);box-shadow:0 0 0 3px rgba(33,118,174,.1); }
+.modal-btns { display:flex;gap:10px;margin-top:4px; }
+.btn-modal-primary {
+  flex:1;padding:10px;background:var(--navy);color:#fff;
+  border:none;border-radius:var(--r-md);font-size:14px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:background .2s;
+}
+.btn-modal-primary:hover { background:var(--blue); }
+.btn-modal-cancel {
+  padding:10px 16px;background:transparent;color:var(--muted);
+  border:1.5px solid var(--border);border-radius:var(--r-md);font-size:14px;
+  cursor:pointer;font-family:var(--font);transition:all .2s;
+}
+.btn-modal-cancel:hover { border-color:var(--blue);color:var(--blue); }
+.temp-pass-box {
+  background:var(--bg);border:1.5px solid var(--border);border-radius:8px;
+  padding:12px;text-align:center;margin:14px 0;
+}
+.temp-pass-label { font-size:11px;color:var(--muted);margin-bottom:6px; }
+.temp-pass-value { font-size:20px;font-weight:800;letter-spacing:.12em;color:var(--navy); }
+.pass-hint { font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5; }
 
 @media (max-width: 768px) {
   body { flex-direction: column; }
@@ -139,9 +186,12 @@ body { font-family: var(--font); display: flex; min-height: 100vh; }
 
 <div class="left">
   <div class="left-inner">
-    <div class="brand-mark">KCH</div>
-    <h2 class="brand-name">Knowledge Cache<br>of Humanity</h2>
-    <p class="brand-sub">Explore thousands of concepts — from ancient discoveries to modern breakthroughs — powered by AI and real academic sources.</p>
+    <div class="brand-logo">
+      <img src="/logo/Logo.jpeg" alt="Sanatan Labs Logo">
+    </div>
+    <h2 class="brand-name">Sanatan Labs</h2>
+    <div class="brand-sub-name">Knowledge Cache of Humanity</div>
+    <p class="brand-sub">Explore thousands of concepts - from ancient discoveries to modern breakthroughs - powered by AI and real academic sources.</p>
     <div class="tag-cloud">
       <span class="tag">Zero</span>
       <span class="tag">Calculus</span>
@@ -173,6 +223,7 @@ body { font-family: var(--font); display: flex; min-height: 100vh; }
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
     </div>
+    <span class="forgot-link" onclick="openForgotModal()">Forgot password?</span>
     <button class="btn-submit" onclick="doLogin()">Sign In</button>
     <div class="form-foot">
       Don't have an account? <a href="/signup">Create one</a>
@@ -180,7 +231,58 @@ body { font-family: var(--font); display: flex; min-height: 100vh; }
   </div>
 </div>
 
+<!-- ── FORGOT PASSWORD MODAL ────────────────── -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-box">
+    <div class="modal-title">Reset Password</div>
+    <div class="modal-sub">Enter your username and we'll generate a temporary password for you.</div>
+    <div class="modal-err" id="forgotErr"></div>
+    <div class="modal-ok"  id="forgotOk"></div>
+    <div id="forgotForm">
+      <div class="modal-field">
+        <label>Username</label>
+        <input type="text" id="forgotUsername" placeholder="Your username">
+      </div>
+      <div class="modal-btns">
+        <button class="btn-modal-primary" onclick="doForgotPassword()">Get Temp Password</button>
+        <button class="btn-modal-cancel" onclick="closeForgotModal()">Cancel</button>
+      </div>
+    </div>
+    <div id="tempPassDisplay" style="display:none;">
+      <div class="temp-pass-box">
+        <div class="temp-pass-label">YOUR TEMPORARY PASSWORD</div>
+        <div class="temp-pass-value" id="tempPassValue"></div>
+      </div>
+      <div class="pass-hint">Copy this password, then sign in. You will be asked to set a new password immediately after.</div>
+      <div class="modal-btns" style="margin-top:16px;">
+        <button class="btn-modal-primary" onclick="closeForgotModal()">Got it, sign in now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHANGE PASSWORD MODAL ────────────────── -->
+<div class="modal-overlay" id="changeModal">
+  <div class="modal-box">
+    <div class="modal-title">Set New Password</div>
+    <div class="modal-sub">Your account requires a new password before you can continue. Please set a strong password below.</div>
+    <div class="modal-err" id="changeErr"></div>
+    <div class="modal-field">
+      <label>New Password</label>
+      <input type="password" id="newPassword" placeholder="Min 8 chars, 1 number, 1 symbol">
+    </div>
+    <div class="modal-field">
+      <label>Confirm New Password</label>
+      <input type="password" id="confirmNewPassword" placeholder="Repeat new password">
+    </div>
+    <div class="pass-hint" style="margin-bottom:14px;">Must be at least 8 characters with at least 1 number and 1 special character.</div>
+    <button class="btn-modal-primary" onclick="doChangePassword()" style="width:100%">Update Password &amp; Continue</button>
+  </div>
+</div>
+
 <script>
+let _pendingToken = null;
+
 async function doLogin() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
@@ -215,10 +317,122 @@ async function doLogin() {
 
   localStorage.setItem('token', data.token);
   localStorage.setItem('username', data.username);
+
+  if (data.must_change_password) {
+    _pendingToken = data.token;
+    document.getElementById('changeModal').classList.add('open');
+    return;
+  }
+
   window.location.href = '/app';
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+async function doChangePassword() {
+  const newPw  = document.getElementById('newPassword').value;
+  const confPw = document.getElementById('confirmNewPassword').value;
+  const err    = document.getElementById('changeErr');
+  err.style.display = 'none';
+
+  if (!newPw || !confPw) {
+    err.textContent = 'Please fill in both fields.';
+    err.style.display = 'block'; return;
+  }
+  if (newPw !== confPw) {
+    err.textContent = 'Passwords do not match.';
+    err.style.display = 'block'; return;
+  }
+  if (newPw.length < 8) {
+    err.textContent = 'Password must be at least 8 characters.';
+    err.style.display = 'block'; return;
+  }
+  if (!/[0-9]/.test(newPw)) {
+    err.textContent = 'Password must contain at least 1 number.';
+    err.style.display = 'block'; return;
+  }
+  if (!/[^a-zA-Z0-9]/.test(newPw)) {
+    err.textContent = 'Password must contain at least 1 special character (e.g. !@#$%).';
+    err.style.display = 'block'; return;
+  }
+
+  const token = _pendingToken || localStorage.getItem('token');
+  let res, data;
+  try {
+    res = await fetch('/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ new_password: newPw })
+    });
+    data = await res.json();
+  } catch (e) {
+    err.textContent = 'Cannot reach server.';
+    err.style.display = 'block'; return;
+  }
+
+  if (!res.ok) {
+    err.textContent = data.error || 'Failed to update password.';
+    err.style.display = 'block'; return;
+  }
+
+  window.location.href = '/app';
+}
+
+// ── Forgot Password ──────────────────────────
+function openForgotModal() {
+  document.getElementById('forgotModal').classList.add('open');
+  document.getElementById('forgotErr').style.display = 'none';
+  document.getElementById('forgotOk').style.display  = 'none';
+  document.getElementById('forgotForm').style.display = 'block';
+  document.getElementById('tempPassDisplay').style.display = 'none';
+  document.getElementById('forgotUsername').value = '';
+}
+
+function closeForgotModal() {
+  document.getElementById('forgotModal').classList.remove('open');
+}
+
+async function doForgotPassword() {
+  const username = document.getElementById('forgotUsername').value.trim();
+  const err = document.getElementById('forgotErr');
+  err.style.display = 'none';
+
+  if (!username) {
+    err.textContent = 'Please enter your username.';
+    err.style.display = 'block'; return;
+  }
+
+  let res, data;
+  try {
+    res = await fetch('/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username })
+    });
+    data = await res.json();
+  } catch (e) {
+    err.textContent = 'Cannot reach server.';
+    err.style.display = 'block'; return;
+  }
+
+  if (!res.ok) {
+    err.textContent = data.error || 'Request failed.';
+    err.style.display = 'block'; return;
+  }
+
+  document.getElementById('forgotForm').style.display = 'none';
+  document.getElementById('tempPassValue').textContent = data.temp_password;
+  document.getElementById('tempPassDisplay').style.display = 'block';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('changeModal').classList.contains('open')) doChangePassword();
+    else if (document.getElementById('forgotModal').classList.contains('open')) doForgotPassword();
+    else doLogin();
+  }
+  if (e.key === 'Escape') {
+    closeForgotModal();
+  }
+});
 </script>
 </body>
 </html>
