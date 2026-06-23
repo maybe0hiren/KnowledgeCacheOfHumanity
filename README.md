@@ -10,13 +10,6 @@ INTRODUCTION
 
 KCH models civilization's knowledge as a memory hierarchy, inspired by how computer systems manage data using cache tiers. Frequently accessed ideas stay hot; unused ideas cool down to cold storage.
 
-Ask it anything:
-
-*   What is the origin of zero?
-*   Who first described gravity?
-*   How has quantum mechanics evolved over time?
-*   What startups are working in this space?
-
 Instead of generic AI answers, KCH retrieves real content from Wikipedia, arXiv, and Semantic Scholar before generating a structured response — no hallucinations.
 
 * * *
@@ -84,48 +77,5 @@ Create a .env file in the project root:
 
 Get a free key at https://aistudio.google.com/apikey
 
-* * *
-
-RUNNING THE PROJECT
--------------------
-
-Start the server:
-
-    uvicorn redEngine.api.app:app --host 127.0.0.1 --port 8080 --reload
-
-Open in browser: http://127.0.0.1:8080
-
-* * *
-
-API USAGE
----------
-
-Sign Up
-
-    curl -X POST "http://127.0.0.1:8080/auth/signup"
-    -H "Content-Type: application/json"
-    -d '{"username": "name", "email": "email@example.com", "password": "Pass@1234"}'
-
-Sign In
-
-    curl -X POST "http://127.0.0.1:8080/auth/login"
-    -H "Content-Type: application/json"
-    -d '{"username": "name", "password": "Pass@1234"}'
-
-Analyze a Concept
-
-    curl -X POST "http://127.0.0.1:8080/analyze"
-    -H "Authorization: Bearer YOUR_TOKEN"
-    -H "Content-Type: application/json"
-    -d '{"idea": "invention of zero"}'
-
-Response
-
-    {
-      "concept_name": "Zero",
-      "analysis": "Zero: The concept of zero originated in ancient India...",
-      "resources": [...],
-      "startups": [{"name": "Wolfram Alpha", "country": "USA"}, ...]
-    }
 
 * * *
