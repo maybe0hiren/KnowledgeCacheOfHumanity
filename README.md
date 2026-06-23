@@ -129,13 +129,3 @@ Response
     }
 
 * * *
-
-FUTURE SCOPE
-------------
-
-*   Multi-turn conversation memory per concept
-*   Graph-based knowledge relationships between concepts
-*   Re-index only changed concepts on repeat search
-*   Browser extension for one-click concept lookup
-*   Export personal knowledge cache as PDF or Word
-*   Multi-language support
